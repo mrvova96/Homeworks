@@ -65,7 +65,7 @@ public class StartMenu {
         String password = new Scanner(System.in).next();
         if (adminService.authorizationDataIsCorrect(login, password)) {
             System.out.println("\nВы авторизованы в качестве администратора!");
-            new AdminMenu(adminService.getAdmin(login));
+            new AdminMenu(userService, adminService.getAdmin(login));
         } else if (userService.authorizationDataIsCorrect(login, password)) {
             System.out.println("\nВы успешно авторизованы!");
             new UserMenu(userService.getUser(login));

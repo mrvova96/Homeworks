@@ -16,7 +16,7 @@ public class InputValidate {
     public static void checkInputDate(String date) throws Exception {
         try {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("dd.MM.yy");
-            LocalDate localDate = LocalDate.parse(date, format);
+            LocalDate.parse(date, format);
         } catch (Exception e) {
             throw new Exception();
         }

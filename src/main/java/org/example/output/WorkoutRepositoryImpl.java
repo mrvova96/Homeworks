@@ -3,7 +3,8 @@ package org.example.output;
 import org.example.model.User;
 import org.example.model.Workout;
 
-import java.util.Comparator;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -59,7 +60,15 @@ public class WorkoutRepositoryImpl implements WorkoutRepository {
      */
     @Override
     public List<Workout> getWorkoutList() {
-        workoutList.sort(Comparator.comparing(Workout::date));
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy");
+        workoutList.sort((workout1, workout2) -> {
+            try {
+                return format.parse(workout1.date()).compareTo(format.parse(workout2.date()));
+            } catch (ParseException e) {
+                System.out.println(e.getMessage());
+                return 0;
+            }
+        });
         return workoutList;
     }
 

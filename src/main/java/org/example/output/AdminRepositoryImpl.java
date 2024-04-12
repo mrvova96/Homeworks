@@ -4,7 +4,6 @@ import org.example.model.Admin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Класс-репозиторий, имитирующий запросы в таблицу "Администраторы"

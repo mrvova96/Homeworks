@@ -4,6 +4,8 @@ import org.example.model.User;
 import org.example.output.UserRepository;
 import org.example.output.UserRepositoryImpl;
 
+import java.util.List;
+
 /**
  * Класс отвечает за взаимодействие с репозиторием пользователей, а также за обработку логики, связанной с
  * пользователями
@@ -55,5 +57,13 @@ public class UserService {
      */
     public User getUser(String login) {
         return userRepository.getUser(login);
+    }
+
+    /**
+     * Возвращает список пользователей через репозиторий
+     * @return Список пользователей
+     */
+    public List<User> getUserList() {
+        return userRepository.getUserList();
     }
 }

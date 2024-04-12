@@ -47,10 +47,6 @@ public class User {
         return name;
     }
 
-    public int getAge() {
-        return age;
-    }
-
     public List<Workout> getWorkoutList() {
         workoutList.sort(Comparator.comparing(Workout::date));
         return workoutList;

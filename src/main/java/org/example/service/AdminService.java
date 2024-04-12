@@ -1,13 +1,8 @@
 package org.example.service;
 
 import org.example.model.Admin;
-import org.example.model.User;
-import org.example.output.AdminRepositoryImpl;
 import org.example.output.AdminRepository;
-import org.example.output.UserRepository;
-import org.example.output.UserRepositoryImpl;
-
-import java.util.List;
+import org.example.output.AdminRepositoryImpl;
 
 /**
  * Класс отвечает за взаимодействие с репозиториями, а также за обработку логики, связанной с администраторами
@@ -18,14 +13,9 @@ public class AdminService {
      * Ссылка на репозиторий администраторов
      */
     private final AdminRepository adminRepository;
-    /**
-     * Ссылка на репозиторий пользователей
-     */
-    private final UserRepository userRepository;
 
     public AdminService() {
         adminRepository = new AdminRepositoryImpl();
-        userRepository = new UserRepositoryImpl();
     }
 
     /**
@@ -46,13 +36,5 @@ public class AdminService {
      */
     public Admin getAdmin(String login) {
         return adminRepository.getAdmin(login);
-    }
-
-    /**
-     * Возвращает список пользователей через репозиторий
-     * @return Список пользователей
-     */
-    public List<User> getUserList() {
-        return userRepository.getUserList();
     }
 }

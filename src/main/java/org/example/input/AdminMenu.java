@@ -2,7 +2,8 @@ package org.example.input;
 
 import org.example.model.Admin;
 import org.example.model.User;
-import org.example.service.AdminService;
+import org.example.service.UserService;
+import org.example.service.WorkoutService;
 
 import java.util.Scanner;
 
@@ -14,14 +15,14 @@ public class AdminMenu {
     /**
      * Ссылка на класс-сервис для обработки логики выборов администратора
      */
-    private final AdminService adminService;
+    private final UserService userService;
     /**
      * Ссылка на текущего администратора
      */
     private final Admin admin;
 
-    public AdminMenu(Admin admin) {
-        adminService = new AdminService();
+    public AdminMenu(UserService userService, Admin admin) {
+        this.userService = userService;
         this.admin = admin;
         showAdminMenu();
     }
@@ -58,12 +59,12 @@ public class AdminMenu {
      * Отображает список зарегестрированных пользователей
      */
     private void showUserList() {
-        if (adminService.getUserList().isEmpty())
+        if (userService.getUserList().isEmpty())
             System.out.println("\nСписок пользователей пуст!");
         else {
             System.out.println("\nСписок пользователей:");
-            for (int i = 0; i < adminService.getUserList().size(); i++)
-                System.out.println((i + 1) + ") " + adminService.getUserList().get(i));
+            for (int i = 0; i < userService.getUserList().size(); i++)
+                System.out.println((i + 1) + ") " + userService.getUserList().get(i));
         }
         showAdminMenu();
     }
@@ -72,20 +73,21 @@ public class AdminMenu {
      * Отображает список тренировок по выбранному пользователю
      */
     private void showUserWorkoutList() {
-        if (adminService.getUserList().isEmpty())
+        if (userService.getUserList().isEmpty())
             System.out.println("\nСписок пользователей пуст!");
         else {
             System.out.println("\nВыберите пользователя:");
-            for (int i = 0; i < adminService.getUserList().size(); i++)
-                System.out.println((i + 1) + ") " + adminService.getUserList().get(i));
+            for (int i = 0; i < userService.getUserList().size(); i++)
+                System.out.println((i + 1) + ") " + userService.getUserList().get(i));
             int position = new Scanner(System.in).nextInt();
-            User user = adminService.getUserList().get(position - 1);
-            if (user.getWorkoutList().isEmpty())
+            User user = userService.getUserList().get(position - 1);
+            WorkoutService workoutService = new WorkoutService(user);
+            if (workoutService.getWorkoutList().isEmpty())
                 System.out.println("\nСписок тренировок пользователя пуст!");
             else {
                 System.out.println("\nСписок занесенных тренировок пользователя:");
-                for (int i = 0; i < user.getWorkoutList().size(); i++)
-                    System.out.println((i + 1) + ") " + user.getWorkoutList().get(i));
+                for (int i = 0; i < workoutService.getWorkoutList().size(); i++)
+                    System.out.println((i + 1) + ") " + workoutService.getWorkoutList().get(i));
             }
         }
         showAdminMenu();

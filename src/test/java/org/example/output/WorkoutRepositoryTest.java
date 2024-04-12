@@ -5,9 +5,6 @@ import org.example.model.Workout;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.NoSuchElementException;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WorkoutRepositoryTest {
