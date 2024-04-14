@@ -1,6 +1,7 @@
 package org.example.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс-модель "Пользователь"
@@ -18,13 +19,13 @@ public class User {
     /**
      * Список типов тренировок пользователя
      */
-    private final List<String> workoutTypeList;
+    private final List<WorkoutType> workoutTypeList;
 
     /**
-     * @param login Логин пользователя
+     * @param login    Логин пользователя
      * @param password Пароль пользователя
-     * @param name Имя пользователя
-     * @param age Возраст пользователя
+     * @param name     Имя пользователя
+     * @param age      Возраст пользователя
      */
     public User(String login, String password, String name, int age) {
         this.login = login;
@@ -32,7 +33,7 @@ public class User {
         this.name = name;
         this.age = age;
         workoutList = new ArrayList<>();
-        workoutTypeList = new ArrayList<>(Arrays.asList("Силовая", "Бег", "Йога"));
+        workoutTypeList = new ArrayList<>();
     }
 
     public String getLogin() {
@@ -48,11 +49,10 @@ public class User {
     }
 
     public List<Workout> getWorkoutList() {
-        workoutList.sort(Comparator.comparing(Workout::date));
         return workoutList;
     }
 
-    public List<String> getWorkoutTypeList() {
+    public List<WorkoutType> getWorkoutTypeList() {
         return workoutTypeList;
     }
 

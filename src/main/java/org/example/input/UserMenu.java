@@ -1,10 +1,17 @@
 package org.example.input;
 
+import org.example.exception.IncorrectDateFormatException;
+import org.example.exception.NegativeValueException;
 import org.example.model.User;
 import org.example.model.Workout;
+import org.example.model.WorkoutType;
+import org.example.service.UserService;
 import org.example.service.WorkoutService;
 import org.example.util.InputValidate;
 
+import java.time.LocalDate;
+import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -13,17 +20,31 @@ import java.util.Scanner;
 public class UserMenu {
 
     /**
-     * Ссылка на класс-сервис для обработки логики выборов пользователя
+     * Ссылка на класс-сервис для обработки логики, связанной с тренировками пользователей
      */
     private final WorkoutService workoutService;
+    /**
+     * Ссылка на класс-сервис для обработки логики, связанной с сохранением аудита пользователей
+     */
+    private final UserService userService;
     /**
      * Ссылка на текущего пользователя
      */
     private final User user;
 
-    public UserMenu(User user) {
-        workoutService = new WorkoutService(user);
+    /**
+     * Конструктор класса
+     *
+     * @param userService  Ссылка на класс-сервис UserService
+     * @param user         Текущий пользователь
+     * @param isRegistered Параметр используется для записи в аудит данных о регистрации, или об авторизации,
+     *                     в замисимости от того, зарегистрировался пользователь впервые или авторизовался
+     */
+    public UserMenu(UserService userService, User user, boolean isRegistered) {
+        this.userService = userService;
         this.user = user;
+        workoutService = new WorkoutService(user);
+        userService.addLoginInfoInAudit(user, isRegistered);
         showUserMenu();
     }
 
@@ -52,39 +73,60 @@ public class UserMenu {
                 case 5 -> showWorkoutTypeList();
                 case 6 -> addWorkoutType();
                 case 7 -> showStatistic();
-                case 8 -> StartMenu.showStartMenu();
-                case 0 -> System.exit(0);
+                case 8 -> logout();
+                case 0 -> exit();
                 default -> {
-                    System.out.println("\nОшибка! Попробуйте еще раз!");
+                    System.out.println("\nОшибка! Выберите корректный пункт!");
                     showUserMenu();
                 }
             }
-        } catch (Exception e) {
-            System.out.println("\nОшибка! Попробуйте еще раз!");
+        } catch (InputMismatchException | IndexOutOfBoundsException e) {
+            System.out.println("\nОшибка! Выберите корректный пункт!");
+            showUserMenu();
+        } catch (NegativeValueException | IncorrectDateFormatException e) {
+            System.out.println(e.getMessage());
             showUserMenu();
         }
     }
 
     /**
      * Добавляет новую тренировку по данным из консоли
-     * @throws Exception Бросает исключение общего типа, если выбран некорректный пункт меню, если введено
-     * отрицательное значение времени или килокалорий, или если дата была введена некорректно
+     *
+     * @throws InputMismatchException       Бросает исключение, если в качестве длительности тренировки, количества
+     *                                      килокалорий или позиции типа тренировки введено не целое число
+     * @throws IndexOutOfBoundsException    Бросает исключение, если введен некорректный номер типа тренировки
+     * @throws NegativeValueException       Бросает исключение, если введены не положительные количество
+     *                                      килокалорий или длительность тренировки
+     * @throws IncorrectDateFormatException Бросает исключение, если введенная дата не соответствует формату
      */
-    private void addWorkout() throws Exception {
+    private void addWorkout() throws InputMismatchException, IndexOutOfBoundsException, NegativeValueException,
+            IncorrectDateFormatException {
         System.out.println("\nВыберите тип тренировки:");
-        for (int i = 0; i < workoutService.getWorkoutTypeList().size(); i++)
-            System.out.println((i + 1) + ") " + workoutService.getWorkoutTypeList().get(i));
+        List<WorkoutType> workoutTypeList = workoutService.getWorkoutTypeList();
+        for (int i = 0; i < workoutTypeList.size(); i++) {
+            System.out.println((i + 1) + ") " + workoutTypeList.get(i));
+        }
         System.out.println(0 + ") Назад");
         int position = new Scanner(System.in).nextInt();
         if (position == 0) {
             showUserMenu();
             return;
         }
-        String type = workoutService.getWorkoutTypeList().get(position - 1);
+        WorkoutType type = workoutTypeList.get(position - 1);
 
         System.out.print("Введите дату тренировки (в формате DD.MM.YY): ");
-        String date = new Scanner(System.in).next();
-        InputValidate.checkInputDate(date);
+        String dateString = new Scanner(System.in).next();
+        LocalDate date = InputValidate.getConvertedDate(dateString);
+        if (date.isAfter(LocalDate.now())) {
+            System.out.println("\nВведенный вами день еще не наступил!");
+            showUserMenu();
+            return;
+        }
+        if (workoutService.isWorkoutThisTypeWasOnThisDay(type, date)) {
+            System.out.println("\nВ этот день уже была проведена тренировка такого типа!");
+            showUserMenu();
+            return;
+        }
 
         System.out.print("Введите длительность тренировки: ");
         int time = new Scanner(System.in).nextInt();
@@ -100,54 +142,83 @@ public class UserMenu {
         Workout workout = new Workout(type, date, time, kcal, info);
         workoutService.addWorkout(workout);
         System.out.println("\nТренировка была успешно добавлена!");
+        userService.addAddingWorkoutInAudit(user, workout);
         showUserMenu();
     }
 
     /**
      * Удаляет выбранную тренировку из общего списка
+     *
+     * @throws InputMismatchException    Бросает исключение, если в качестве позиции тренировки введено не целое число
+     * @throws IndexOutOfBoundsException Бросает исключение, если введен некорректный номер тренировки
      */
-    private void removeWorkout() {
+    private void removeWorkout() throws InputMismatchException, IndexOutOfBoundsException {
         System.out.println("\nКакую тренировку необходимо удалить?");
-        for (int i = 0; i < workoutService.getWorkoutList().size(); i++)
-            System.out.println((i + 1) + ") " + workoutService.getWorkoutList().get(i));
+        List<Workout> workoutList = workoutService.getWorkoutList();
+        for (int i = 0; i < workoutList.size(); i++) {
+            System.out.println((i + 1) + ") " + workoutList.get(i));
+        }
         System.out.println(0 + ") Назад");
         int position = new Scanner(System.in).nextInt();
         if (position == 0) {
             showUserMenu();
             return;
         }
+        Workout removedWorkout = workoutService.getWorkoutList().get(position - 1);
         workoutService.removeWorkout(position - 1);
         System.out.println("\nТренировка была успешно удалена!");
+        userService.addRemovingWorkoutInAudit(user, removedWorkout);
         showUserMenu();
     }
 
     /**
      * Обновляет выбранную тренировку из общего списка
-     * @throws Exception Бросает исключение общего типа, если выбран некорректный пункт меню, если введено
-     * отрицательное значение времени или килокалорий, или если дата была введена некорректно
+     *
+     * @throws InputMismatchException       Бросает исключение, если в качестве длительности тренировки, количества
+     *                                      килокалорий, позиции тренировки или позиции типа тренировки введено не
+     *                                      целое число
+     * @throws IndexOutOfBoundsException    Бросает исключение, если введен некорректный номер тренировки или номер
+     *                                      типа тренировки
+     * @throws NegativeValueException       Бросает исключение, если введены не положительные количество
+     *                                      килокалорий или длительность тренировки
+     * @throws IncorrectDateFormatException Бросает исключение, если введенная дата не соответствует формату
      */
-    private void updateWorkout() throws Exception {
+    private void updateWorkout() throws InputMismatchException, IndexOutOfBoundsException, NegativeValueException,
+            IncorrectDateFormatException {
         System.out.println("\nКакую тренировку необходимо отредактировать?");
-        for (int i = 0; i < workoutService.getWorkoutList().size(); i++)
-            System.out.println((i + 1) + ") " + workoutService.getWorkoutList().get(i));
+        List<Workout> workoutList = workoutService.getWorkoutList();
+        for (int i = 0; i < workoutList.size(); i++) {
+            System.out.println((i + 1) + ") " + workoutList.get(i));
+        }
         System.out.println(0 + ") Назад");
         int position = new Scanner(System.in).nextInt();
         if (position == 0) {
             showUserMenu();
             return;
         }
-        Workout workout = workoutService.getWorkoutList().get(position - 1);
+        Workout workout = workoutList.get(position - 1);
 
         System.out.println("Выберите тип тренировки (\"0\" чтобы не менять):");
-        for (int i = 0; i < workoutService.getWorkoutTypeList().size(); i++)
-            System.out.println((i + 1) + ") " + workoutService.getWorkoutTypeList().get(i));
-        int typeNumber = new Scanner(System.in).nextInt();
-        String type = (typeNumber == 0) ? workout.type() : workoutService.getWorkoutTypeList().get(typeNumber - 1);
+        List<WorkoutType> workoutTypeList = workoutService.getWorkoutTypeList();
+        for (int i = 0; i < workoutTypeList.size(); i++) {
+            System.out.println((i + 1) + ") " + workoutTypeList.get(i));
+        }
+        int typePosition = new Scanner(System.in).nextInt();
+        WorkoutType type = (typePosition == 0) ? workout.workoutType() : workoutTypeList.get(typePosition - 1);
 
-        System.out.print("Введите дату тренировки (\"0\" чтобы не менять): ");
-        String date = new Scanner(System.in).next();
-        date = (date.equals("0")) ? workout.date() : date;
-        InputValidate.checkInputDate(date);
+        System.out.print("Введите дату тренировки (в формате DD.MM.YY) (\"0\" чтобы не менять): ");
+        String dateString = new Scanner(System.in).next();
+        LocalDate date = (dateString.equals("0")) ? workout.date() : InputValidate.getConvertedDate(dateString);
+        if (date.isAfter(LocalDate.now())) {
+            System.out.println("\nВведенный вами день еще не наступил!");
+            showUserMenu();
+            return;
+        }
+        if (workoutService.isWorkoutThisTypeWasOnThisDay(type, date)) {
+            System.out.println("\nВ этот день уже была проведена тренировка такого типа!");
+            showUserMenu();
+            return;
+        }
 
         System.out.print("Введите длительность тренировки (\"0\" чтобы не менять): ");
         int time = new Scanner(System.in).nextInt();
@@ -166,6 +237,7 @@ public class UserMenu {
         Workout newWorkout = new Workout(type, date, time, kcal, info);
         workoutService.updateWorkout(position - 1, newWorkout);
         System.out.println("\nТренировка была успешно отредактирована!");
+        userService.addUpdatingWorkoutInAudit(user, workout);
         showUserMenu();
     }
 
@@ -173,13 +245,16 @@ public class UserMenu {
      * Отображает список тренировок текущего пользователя, отсортированных по дате
      */
     private void showWorkoutList() {
-        if (workoutService.getWorkoutList().isEmpty())
+        List<Workout> workoutListSortedByDate = workoutService.getWorkoutListSortedByDate();
+        if (workoutListSortedByDate.isEmpty()) {
             System.out.println("\nСписок тренировок пуст!");
-        else {
+        } else {
             System.out.println("\nСписок занесенных тренировок:");
-            for (int i = 0; i < workoutService.getWorkoutList().size(); i++)
-                System.out.println((i + 1) + ") " + workoutService.getWorkoutList().get(i));
+            for (int i = 0; i < workoutListSortedByDate.size(); i++) {
+                System.out.println((i + 1) + ") " + workoutListSortedByDate.get(i));
+            }
         }
+        userService.addViewingWorkoutListInAudit(user);
         showUserMenu();
     }
 
@@ -188,8 +263,11 @@ public class UserMenu {
      */
     private void showWorkoutTypeList() {
         System.out.println("\nСписок занесенных типов тренировок:");
-        for (int i = 0; i < workoutService.getWorkoutTypeList().size(); i++)
-            System.out.println((i + 1) + ") " + workoutService.getWorkoutTypeList().get(i));
+        List<WorkoutType> workoutTypeList = workoutService.getWorkoutTypeList();
+        for (int i = 0; i < workoutTypeList.size(); i++) {
+            System.out.println((i + 1) + ") " + workoutTypeList.get(i));
+        }
+        userService.addViewingWorkoutTypeListInAudit(user);
         showUserMenu();
     }
 
@@ -199,11 +277,13 @@ public class UserMenu {
     private void addWorkoutType() {
         System.out.print("\nВведите новый тип тренировки: ");
         String type = new Scanner(System.in).next();
-        if (workoutService.workoutTypeIsExists(type))
-            System.out.println("Данный тип тренировки уже существует!");
-        else {
-            workoutService.addWorkoutType(type);
-            System.out.println("Новый тип тренировки был успешно добавлен!");
+        WorkoutType workoutType = new WorkoutType(type);
+        if (workoutService.isWorkoutTypeExist(workoutType)) {
+            System.out.println("\nДанный тип тренировки уже существует!");
+        } else {
+            workoutService.addWorkoutType(workoutType);
+            System.out.println("\nНовый тип тренировки был успешно добавлен!");
+            userService.addAddingWorkoutTypeInAudit(user, workoutType);
         }
         showUserMenu();
     }
@@ -227,21 +307,37 @@ public class UserMenu {
                 case 4 -> showAverageCountOfCalories();
                 case 0 -> showUserMenu();
                 default -> {
-                    System.out.println("\nОшибка! Попробуйте еще раз!");
-                    showUserMenu();
+                    System.out.println("\nОшибка! Выберите корректный пункт!");
+                    showStatistic();
                 }
             }
-        } catch (Exception e) {
-            System.out.println("\nОшибка! Попробуйте еще раз!");
-            showUserMenu();
+        } catch (InputMismatchException | IndexOutOfBoundsException e) {
+            System.out.println("\nОшибка! Выберите корректный пункт!");
+            showStatistic();
         }
     }
 
     /**
      * Отображает статистику по общему количеству тренировок определенного типа
+     *
+     * @throws InputMismatchException    Бросает исключение, если в качестве позиции типа тренировки введено не
+     *                                   целое число
+     * @throws IndexOutOfBoundsException Бросает исключение, если введен некорректный номер типа тренировки
      */
-    private void showCountOfWorkoutsByType() {
-        workoutService.showCountOfWorkoutsByType();
+    private void showCountOfWorkoutsByType() throws InputMismatchException, IndexOutOfBoundsException {
+        if (workoutService.getWorkoutList().isEmpty()) {
+            System.out.println("\nСписок тренировок пуст!");
+        } else {
+            System.out.println("\nВыберите тип тренировки:");
+            List<WorkoutType> workoutTypeList = workoutService.getWorkoutTypeList();
+            for (int i = 0; i < workoutTypeList.size(); i++) {
+                System.out.println((i + 1) + ") " + workoutTypeList.get(i));
+            }
+            int position = new Scanner(System.in).nextInt();
+            WorkoutType workoutType = workoutTypeList.get(position - 1);
+            System.out.println(workoutService.getCountOfWorkoutsByTypeMessage(workoutType));
+            userService.addViewingCountOfWorkoutsByTypeInAudit(user, workoutType);
+        }
         showStatistic();
     }
 
@@ -249,7 +345,8 @@ public class UserMenu {
      * Отображает статистику по среднему времени выполнения всех тренировок
      */
     private void showAverageWorkoutsTime() {
-        workoutService.showAverageWorkoutsTime();
+        System.out.println(workoutService.getAverageWorkoutsTimeMessage());
+        userService.addViewingAverageWorkoutsTimeInAudit(user);
         showStatistic();
     }
 
@@ -257,7 +354,8 @@ public class UserMenu {
      * Отображает статистику по общему количеству потраченных килокалорий
      */
     private void showCountOfCalories() {
-        workoutService.showCountOfCalories();
+        System.out.println(workoutService.getCountOfCaloriesMessage());
+        userService.addViewingCountOfCaloriesInAudit(user);
         showStatistic();
     }
 
@@ -265,7 +363,24 @@ public class UserMenu {
      * Отображает статистику по количеству потраченных килокалорий за тренировку в среднем
      */
     private void showAverageCountOfCalories() {
-        workoutService.showAverageCountOfCalories();
+        System.out.println(workoutService.getAverageCountOfCaloriesMessage());
+        userService.addViewingAverageCountOfCaloriesInAudit(user);
         showStatistic();
+    }
+
+    /**
+     * Производит выход из профиля
+     */
+    private void logout() {
+        userService.addLogoutInfoInAudit(user);
+        StartMenu.showStartMenu();
+    }
+
+    /**
+     * Производит выход из приложения
+     */
+    private void exit() {
+        userService.addExitInfoInAudit(user);
+        System.exit(0);
     }
 }

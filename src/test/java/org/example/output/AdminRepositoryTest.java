@@ -4,9 +4,8 @@ import org.example.model.Admin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.NoSuchElementException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AdminRepositoryTest {
 
@@ -18,8 +17,8 @@ class AdminRepositoryTest {
     }
 
     @Test
-    void whenGetAdminListThenSizeIsCorrect() {
-        assertEquals(1, adminRepository.getAdminList().size());
+    void whenGetAdminMapThenSizeIsCorrect() {
+        assertEquals(1, adminRepository.getAdminMap().size());
     }
 
     @Test
@@ -29,7 +28,7 @@ class AdminRepositoryTest {
     }
 
     @Test
-    void whenGetAdminByNonExistingLoginThenThrowException() {
-        assertThrows(NoSuchElementException.class, () -> adminRepository.getAdmin("incorrect"));
+    void whenGetAdminByNonExistingLoginThenReturnNull() {
+        assertNull(adminRepository.getAdmin("incorrect"));
     }
 }

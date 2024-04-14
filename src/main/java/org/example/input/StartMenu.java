@@ -1,10 +1,12 @@
 package org.example.input;
 
+import org.example.exception.NegativeValueException;
 import org.example.model.User;
 import org.example.service.AdminService;
 import org.example.service.UserService;
 import org.example.util.InputValidate;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
@@ -45,12 +47,15 @@ public class StartMenu {
                 case 2 -> register();
                 case 0 -> System.exit(0);
                 default -> {
-                    System.out.println("\nОшибка! Попробуйте еще раз!");
+                    System.out.println("\nОшибка! Выберите корректный пункт!");
                     showStartMenu();
                 }
             }
-        } catch (Exception e) {
-            System.out.println("\nОшибка! Попробуйте еще раз!");
+        } catch (InputMismatchException e) {
+            System.out.println("\nОшибка! Выберите корректный пункт!");
+            showStartMenu();
+        } catch (NegativeValueException e) {
+            System.out.println(e.getMessage());
             showStartMenu();
         }
     }
@@ -63,26 +68,28 @@ public class StartMenu {
         String login = new Scanner(System.in).next();
         System.out.print("Введите пароль: ");
         String password = new Scanner(System.in).next();
-        if (adminService.authorizationDataIsCorrect(login, password)) {
+        if (adminService.isAuthorizationDataCorrect(login, password)) {
             System.out.println("\nВы авторизованы в качестве администратора!");
             new AdminMenu(userService, adminService.getAdmin(login));
-        } else if (userService.authorizationDataIsCorrect(login, password)) {
+        } else if (userService.isAuthorizationDataCorrect(login, password)) {
             System.out.println("\nВы успешно авторизованы!");
-            new UserMenu(userService.getUser(login));
+            new UserMenu(userService, userService.getUser(login), false);
         } else {
-            System.out.println("Логин/пароль введены неверно! Попробуйте еще раз!");
+            System.out.println("\nЛогин/пароль введены неверно! Попробуйте еще раз!");
             showStartMenu();
         }
     }
 
     /**
      * Выполняет регистрацию нового пользователя
-     * @throws Exception Бросает исключение общего типа, если введен отрицательный возраст
+     *
+     * @throws InputMismatchException Бросает исключение, если в качестве возраста введено не целое число
+     * @throws NegativeValueException Бросает исключение, если введен не положительный возраст
      */
-    private static void register() throws Exception {
+    private static void register() throws InputMismatchException, NegativeValueException {
         System.out.print("\nВведите логин: ");
         String login = new Scanner(System.in).next();
-        if (userService.registrationDataIsCorrect(login)) {
+        if (userService.isLoginAvailable(login) && adminService.isLoginAvailable(login)) {
             System.out.print("Введите пароль: ");
             String password = new Scanner(System.in).next();
             System.out.print("Введите ваше имя: ");
@@ -92,9 +99,9 @@ public class StartMenu {
             InputValidate.checkTheNumberIsPositive(age);
             userService.addUser(new User(login, password, name, age));
             System.out.println("\nВы успешно зарегистрированы!");
-            new UserMenu(userService.getUser(login));
+            new UserMenu(userService, userService.getUser(login), true);
         } else {
-            System.out.println("Выбранный вами логин уже занят! Попробуйте еще раз!");
+            System.out.println("\nВыбранный вами логин уже занят! Попробуйте еще раз!");
             showStartMenu();
         }
     }

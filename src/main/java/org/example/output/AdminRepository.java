@@ -2,7 +2,7 @@ package org.example.output;
 
 import org.example.model.Admin;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Шаблон для репозитория администраторов
@@ -10,13 +10,22 @@ import java.util.List;
 public interface AdminRepository {
 
     /**
+     * Добавляет нового администратора
+     *
+     * @param admin Администратор
+     */
+    void addAdmin(Admin admin);
+
+    /**
      * Возвращает список администраторов
+     *
      * @return Список администраторов
      */
-    List<Admin> getAdminList();
+    Map<String, Admin> getAdminMap();
 
     /**
      * Возвращает администратора по его логину
+     *
      * @param login Логин администратора
      * @return Администратор
      */

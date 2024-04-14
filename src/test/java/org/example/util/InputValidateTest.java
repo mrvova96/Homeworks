@@ -1,5 +1,7 @@
 package org.example.util;
 
+import org.example.exception.IncorrectDateFormatException;
+import org.example.exception.NegativeValueException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -9,13 +11,12 @@ class InputValidateTest {
 
     @Test
     void whenDateIsCorrectFormatThenIsCorrect() {
-        assertDoesNotThrow(() -> InputValidate.checkInputDate("10.04.24"));
+        assertDoesNotThrow(() -> InputValidate.getConvertedDate("10.04.24"));
     }
 
     @Test
     void whenDateIsIncorrectFormatThenThrowException() {
-        assertThrows(Exception.class, () -> InputValidate.checkInputDate("New Date"));
-        assertThrows(Exception.class, () -> InputValidate.checkInputDate("2010-12-12"));
+        assertThrows(IncorrectDateFormatException.class, () -> InputValidate.getConvertedDate("New Date"));
     }
 
     @Test
@@ -25,7 +26,6 @@ class InputValidateTest {
 
     @Test
     void whenInputNumberIsNotPositiveWhenThrowException() {
-        assertThrows(Exception.class, () -> InputValidate.checkTheNumberIsPositive(-10));
-        assertThrows(Exception.class, () -> InputValidate.checkTheNumberIsPositive(0));
+        assertThrows(NegativeValueException.class, () -> InputValidate.checkTheNumberIsPositive(-10));
     }
 }

@@ -2,8 +2,8 @@ package org.example.output;
 
 import org.example.model.Admin;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс-репозиторий, имитирующий запросы в таблицу "Администраторы"
@@ -13,31 +13,41 @@ public class AdminRepositoryImpl implements AdminRepository {
     /**
      * Коллекция для хранения администраторов (в рамках приложения администратор только один)
      */
-    private final List<Admin> adminList;
+    private final Map<String, Admin> adminMap;
 
     public AdminRepositoryImpl() {
-        adminList = new ArrayList<>(List.of(new Admin("admin", "admin", "Владимир", 27)));
+        adminMap = new HashMap<>();
+        addAdmin(new Admin("admin", "admin", "Владимир", 27));
     }
 
     /**
-     * Возвращает список администраторов
-     * @return Список администраторов
+     * Добавляет нового администратора в коллекцию
+     *
+     * @param admin Администратор
      */
     @Override
-    public List<Admin> getAdminList() {
-        return adminList;
+    public void addAdmin(Admin admin) {
+        adminMap.put(admin.login(), admin);
+    }
+
+    /**
+     * Возвращает копию коллекции администраторов
+     *
+     * @return Коллекция администраторов
+     */
+    @Override
+    public Map<String, Admin> getAdminMap() {
+        return new HashMap<>(adminMap);
     }
 
     /**
      * Возвращает администратора по его логину
+     *
      * @param login Логин администратора
      * @return Администратор
      */
     @Override
     public Admin getAdmin(String login) {
-        return adminList.stream()
-                .filter(admin2 -> admin2.login().equals(login))
-                .findFirst()
-                .get();
+        return adminMap.get(login);
     }
 }

@@ -20,17 +20,33 @@ public class AdminService {
 
     /**
      * Проверяет корректность введенных данных при авторизации администратора
-     * @param login Логин администратора
+     *
+     * @param login    Логин администратора
      * @param password Пароль администратора
      * @return True, если администратор находится в базе, иначе False
      */
-    public boolean authorizationDataIsCorrect(String login, String password) {
-        return adminRepository.getAdminList().stream()
-                .anyMatch(admin -> admin.login().equals(login) && admin.password().equals(password));
+    public boolean isAuthorizationDataCorrect(String login, String password) {
+        Admin admin = getAdmin(login);
+        if (admin == null) {
+            return false;
+        } else {
+            return admin.password().equals(password);
+        }
+    }
+
+    /**
+     * Проверяет доступность логина по базе администраторов
+     *
+     * @param login Логин пользователя
+     * @return True, если выбранный логин свободен, иначе False
+     */
+    public boolean isLoginAvailable(String login) {
+        return getAdmin(login) == null;
     }
 
     /**
      * Возвращает администратора по его логину через репозиторий
+     *
      * @param login Логин администратора
      * @return Администратор
      */

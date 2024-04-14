@@ -4,7 +4,8 @@ import org.example.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserServiceTest {
 
@@ -19,23 +20,23 @@ class UserServiceTest {
     void whenUserIsExistThenAuthorizationDataIsCorrect() {
         User user = new User("user", "user", "Nick", 25);
         userService.addUser(user);
-        assertTrue(userService.authorizationDataIsCorrect("user", "user"));
+        assertTrue(userService.isAuthorizationDataCorrect("user", "user"));
     }
 
     @Test
     void whenUserIsNotExistThenAuthorizationDataIsIncorrect() {
-        assertFalse(userService.authorizationDataIsCorrect("user", "user"));
+        assertFalse(userService.isAuthorizationDataCorrect("user", "user"));
     }
 
     @Test
     void whenLoginIsNotExistThenRegistrationDataIsCorrect() {
-        assertTrue(userService.registrationDataIsCorrect("user"));
+        assertTrue(userService.isLoginAvailable("user"));
     }
 
     @Test
     void whenLoginIsExistThenRegistrationDataIsIncorrect() {
         User user = new User("user", "user", "Nick", 25);
         userService.addUser(user);
-        assertFalse(userService.registrationDataIsCorrect("user"));
+        assertFalse(userService.isLoginAvailable("user"));
     }
 }

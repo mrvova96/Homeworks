@@ -3,7 +3,8 @@ package org.example.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AdminServiceTest {
 
@@ -16,11 +17,11 @@ class AdminServiceTest {
 
     @Test
     void whenAdminIsExistThenAuthorizationDataIsCorrect() {
-        assertTrue(adminService.authorizationDataIsCorrect("admin", "admin"));
+        assertTrue(adminService.isAuthorizationDataCorrect("admin", "admin"));
     }
 
     @Test
     void whenAdminIsNotExistThenAuthorizationDataIsIncorrect() {
-        assertFalse(adminService.authorizationDataIsCorrect("123", "123"));
+        assertFalse(adminService.isAuthorizationDataCorrect("123", "123"));
     }
 }

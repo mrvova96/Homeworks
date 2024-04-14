@@ -4,10 +4,8 @@ import org.example.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.NoSuchElementException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UserRepositoryTest {
 
@@ -22,7 +20,7 @@ class UserRepositoryTest {
     void whenAddNewUserThenSizeIsChanging() {
         User user = new User("123", "123", "Nick", 25);
         userRepository.addUser(user);
-        assertEquals(1, userRepository.getUserList().size());
+        assertEquals(1, userRepository.getUserMap().size());
     }
 
     @Test
@@ -33,7 +31,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void whenGetUserByNonExistingLoginThenThrowException() {
-        assertThrows(NoSuchElementException.class, () -> userRepository.getUser("incorrect"));
+    void whenGetUserByNonExistingLoginThenReturnNull() {
+        assertNull(userRepository.getUser("incorrect"));
     }
 }

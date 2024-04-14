@@ -1,54 +1,53 @@
 package org.example.service;
 
+import org.example.exception.IncorrectDateFormatException;
 import org.example.model.User;
 import org.example.model.Workout;
+import org.example.model.WorkoutType;
+import org.example.util.InputValidate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WorkoutServiceTest {
 
-    private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private WorkoutService workoutService;
 
     @BeforeEach
-    void setUp() {
-        System.setOut(new PrintStream(outputStream));
+    void setUp() throws IncorrectDateFormatException {
         User user = new User("123", "123", "Nick", 25);
         workoutService = new WorkoutService(user);
+        LocalDate date1 = InputValidate.getConvertedDate("12.12.12");
+        LocalDate date2 = InputValidate.getConvertedDate("21.12.12");
+        workoutService.addWorkout(new Workout(new WorkoutType("type"), date1, 40, 150, ""));
+        workoutService.addWorkout(new Workout(new WorkoutType("type"), date2, 25, 100, ""));
     }
 
     @Test
-    void whenAddAnyWorkoutsThenPrintCorrectAverageWorkoutsTime() {
-        workoutService.addWorkout(new Workout("Бег", "11.12.22", 40, 150, ""));
-        workoutService.addWorkout(new Workout("Бег", "21.12.22", 25, 100, ""));
-        workoutService.showAverageWorkoutsTime();
-        assertEquals("Среднее время тренировок: 32.5", outputStream.toString().trim());
+    void whenAddWorkoutSameTypeOnSameDayThenReturnTrue() throws IncorrectDateFormatException {
+        LocalDate date = InputValidate.getConvertedDate("12.12.12");
+        assertTrue(workoutService.isWorkoutThisTypeWasOnThisDay(new WorkoutType("type"), date));
     }
 
     @Test
-    void whenAddAnyWorkoutsThenPrintCorrectCountOfCalories() {
-        workoutService.addWorkout(new Workout("Бег", "11.12.22", 40, 150, ""));
-        workoutService.addWorkout(new Workout("Бег", "21.12.22", 25, 100, ""));
-        workoutService.showCountOfCalories();
-        assertEquals("Килокалорий потрачено за все тренировки: 250", outputStream.toString().trim());
+    void whenAddAnyWorkoutsThenGetCorrectAverageWorkoutsTime() {
+        String message = workoutService.getAverageWorkoutsTimeMessage();
+        assertEquals("Среднее время тренировок: 32.5", message.trim());
     }
 
     @Test
-    void whenAddAnyWorkoutsThenPrintCorrectAverageCountOfCalories() {
-        workoutService.addWorkout(new Workout("Бег", "11.12.22", 40, 150, ""));
-        workoutService.addWorkout(new Workout("Бег", "21.12.22", 25, 100, ""));
-        workoutService.showAverageCountOfCalories();
-        assertEquals("Килокалорий потрачено за тренировку в среднем: 125.0", outputStream.toString().trim());
+    void whenAddAnyWorkoutsThenGetCorrectCountOfCalories() {
+        String message = workoutService.getCountOfCaloriesMessage();
+        assertEquals("Килокалорий потрачено за все тренировки: 250", message.trim());
     }
 
     @Test
-    void whenWorkoutListIsEmptyThenPrintMessageAboutIt() {
-        workoutService.showAverageWorkoutsTime();
-        assertEquals("Список тренировок пуст!", outputStream.toString().trim());
+    void whenAddAnyWorkoutsThenGetCorrectAverageCountOfCalories() {
+        String message = workoutService.getAverageCountOfCaloriesMessage();
+        assertEquals("Килокалорий потрачено за тренировку в среднем: 125.0", message.trim());
     }
 }

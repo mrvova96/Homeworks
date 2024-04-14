@@ -2,9 +2,9 @@ package org.example.output;
 
 import org.example.model.User;
 import org.example.model.Workout;
+import org.example.model.WorkoutType;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,15 +19,21 @@ public class WorkoutRepositoryImpl implements WorkoutRepository {
     /**
      * Коллекция для хранения типов тренировок пользователя
      */
-    private final List<String> workoutTypeList;
+    private final List<WorkoutType> workoutTypeList;
 
     public WorkoutRepositoryImpl(User user) {
         workoutList = user.getWorkoutList();
         workoutTypeList = user.getWorkoutTypeList();
+        if (workoutTypeList.isEmpty()) {
+            addWorkoutType(new WorkoutType("Бег"));
+            addWorkoutType(new WorkoutType("Силовая"));
+            addWorkoutType(new WorkoutType("Йога"));
+        }
     }
 
     /**
      * Добавляет новую тренировку в коллекцию
+     *
      * @param workout Тренировка
      */
     @Override
@@ -37,6 +43,7 @@ public class WorkoutRepositoryImpl implements WorkoutRepository {
 
     /**
      * Удаляет тренировку из коллекции по индексу
+     *
      * @param index Индекс тренировки
      */
     @Override
@@ -46,7 +53,8 @@ public class WorkoutRepositoryImpl implements WorkoutRepository {
 
     /**
      * Обновляет тренировку из коллекции по индексу
-     * @param index Индекс старой тренировки
+     *
+     * @param index   Индекс старой тренировки
      * @param workout Новая тренировка
      */
     @Override
@@ -55,38 +63,32 @@ public class WorkoutRepositoryImpl implements WorkoutRepository {
     }
 
     /**
-     * Возвращает список тренировок, отсортированных по дате
+     * Возвращает копию коллекции тренировок
+     *
      * @return Коллекция тренировок
      */
     @Override
     public List<Workout> getWorkoutList() {
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy");
-        workoutList.sort((workout1, workout2) -> {
-            try {
-                return format.parse(workout1.date()).compareTo(format.parse(workout2.date()));
-            } catch (ParseException e) {
-                System.out.println(e.getMessage());
-                return 0;
-            }
-        });
-        return workoutList;
+        return new ArrayList<>(workoutList);
     }
 
     /**
      * Добавляет новый тип тренировки
+     *
      * @param workoutType Тип тренировки
      */
     @Override
-    public void addWorkoutType(String workoutType) {
+    public void addWorkoutType(WorkoutType workoutType) {
         workoutTypeList.add(workoutType);
     }
 
     /**
-     * Возвращает список типов тренировок
+     * Возвращает копию коллекции типов тренировок
+     *
      * @return Коллекция типов тренировок
      */
     @Override
-    public List<String> getWorkoutTypeList() {
-        return workoutTypeList;
+    public List<WorkoutType> getWorkoutTypeList() {
+        return new ArrayList<>(workoutTypeList);
     }
 }
