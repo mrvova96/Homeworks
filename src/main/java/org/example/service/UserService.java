@@ -1,14 +1,9 @@
 package org.example.service;
 
 import org.example.model.User;
-import org.example.model.Workout;
-import org.example.model.WorkoutType;
 import org.example.output.UserRepository;
 import org.example.output.UserRepositoryImpl;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,8 +17,14 @@ public class UserService {
      */
     private final UserRepository userRepository;
 
+    /**
+     * Ссылка на сервис аудитов
+     */
+    private final AuditService auditService;
+
     public UserService() {
         userRepository = new UserRepositoryImpl();
+        auditService = new AuditService();
     }
 
     /**
@@ -81,165 +82,11 @@ public class UserService {
     }
 
     /**
-     * Возвращает текущую дату с учетом времени, используется для сохранения записей аудита пользователей
+     * Геттер на сервис аудитов
      *
-     * @return Текущая дата
+     * @return Сервис аудитов
      */
-    private String getCurrentDate() {
-        Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return simpleDateFormat.format(date);
-    }
-
-    /**
-     * Сохраняет информацию о регистрации/авторизации в аудит
-     *
-     * @param user         Пользователь
-     * @param isRegistered True, если пользователь впервые зарегистрировался, и False, если он авторизовался,
-     *                     используется для сохранения записи об этом в аудит
-     */
-    public void addLoginInfoInAudit(User user, boolean isRegistered) {
-        StringBuilder message = new StringBuilder();
-        message.append(getCurrentDate()).append(" - ");
-        if (isRegistered) {
-            message.append("Регистрация в приложении");
-        } else {
-            message.append("Авторизация в приложении");
-        }
-        userRepository.addMessageInAudit(user, message.toString());
-    }
-
-    /**
-     * Сохраняет информацию о добавлении новой тренировки в аудит
-     *
-     * @param user    Пользователь
-     * @param workout Тренировка
-     */
-    public void addAddingWorkoutInAudit(User user, Workout workout) {
-        String message = getCurrentDate() + " - " + "Добавление новой тренировки типа \"" +
-                workout.workoutType() + "\" на " + workout.date() + " число";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию об удалении тренировки в аудит
-     *
-     * @param user    Пользователь
-     * @param workout Тренировка
-     */
-    public void addRemovingWorkoutInAudit(User user, Workout workout) {
-        String message = getCurrentDate() + " - " + "Удаление тренировки типа \"" +
-                workout.workoutType() + "\" от " + workout.date() + " числа";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о редактировании тренировки в аудит
-     *
-     * @param user    Пользователь
-     * @param workout Тренировка
-     */
-    public void addUpdatingWorkoutInAudit(User user, Workout workout) {
-        String message = getCurrentDate() + " - " + "Редактирование тренировки типа \"" +
-                workout.workoutType() + "\" от " + workout.date() + " числа";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о просмотре пользователем списка тренировок в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addViewingWorkoutListInAudit(User user) {
-        userRepository.addMessageInAudit(user, getCurrentDate() + " - " + "Просмотр списка тренировок");
-    }
-
-    /**
-     * Сохраняет информацию о просмотре пользователем списка типов тренировок в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addViewingWorkoutTypeListInAudit(User user) {
-        userRepository.addMessageInAudit(user, getCurrentDate() + " - " + "Просмотр списка типов тренировок");
-    }
-
-    /**
-     * Сохраняет информацию о добавлении нового типа тренировки в аудит
-     *
-     * @param user        Пользователь
-     * @param workoutType Тип тренировки
-     */
-    public void addAddingWorkoutTypeInAudit(User user, WorkoutType workoutType) {
-        String message = getCurrentDate() + " - " + "Добавление нового типа тренировки \"" +
-                workoutType + "\"";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о просмотре статистики по общему количеству тренировок указанного типа в аудит
-     *
-     * @param user        Пользователь
-     * @param workoutType Тип тренировки
-     */
-    public void addViewingCountOfWorkoutsByTypeInAudit(User user, WorkoutType workoutType) {
-        String message = getCurrentDate() + " - " +
-                "Просмотр статистики по общему количеству тренировок типа \"" +
-                workoutType + "\"";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о просмотре статистики по среднему времени выполнения всех тренировок в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addViewingAverageWorkoutsTimeInAudit(User user) {
-        String message = getCurrentDate() + " - " +
-                "Просмотр статистики по среднему времени выполнения всех тренировок";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о просмотре статистики по общему количеству потраченных килокалорий в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addViewingCountOfCaloriesInAudit(User user) {
-        String message = getCurrentDate() + " - " +
-                "Просмотр статистики по общему количеству потраченных килокалорий";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о просмотре статистики по среднему количеству потраченных килокалорий в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addViewingAverageCountOfCaloriesInAudit(User user) {
-        String message = getCurrentDate() + " - " +
-                "Просмотр статистики по количеству потраченных килокалорий за тренировку в среднем";
-        userRepository.addMessageInAudit(user, message);
-    }
-
-    /**
-     * Сохраняет информацию о выходе пользователем из профиля в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addLogoutInfoInAudit(User user) {
-        userRepository.addMessageInAudit(user, getCurrentDate() + " - " + "Выход из профиля");
-    }
-
-    /**
-     * Сохраняет информацию о выходе пользователем из приложения в аудит
-     *
-     * @param user Пользователь
-     */
-    public void addExitInfoInAudit(User user) {
-        userRepository.addMessageInAudit(user, getCurrentDate() + " - " + "Выход из приложения");
-    }
-
-    public List<String> getAuditListByUser(User user) {
-        return userRepository.getAuditListByUser(user);
+    public AuditService getAuditService() {
+        return auditService;
     }
 }

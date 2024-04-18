@@ -2,9 +2,7 @@ package org.example.output;
 
 import org.example.model.User;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,14 +14,9 @@ public class UserRepositoryImpl implements UserRepository {
      * Коллекция для хранения пользователей
      */
     private final Map<String, User> userMap;
-    /**
-     * Коллекция для хранения аудита пользователей
-     */
-    private final Map<User, List<String>> auditMap;
 
     public UserRepositoryImpl() {
         userMap = new HashMap<>();
-        auditMap = new HashMap<>();
     }
 
     /**
@@ -55,30 +48,5 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User getUser(String login) {
         return userMap.get(login);
-    }
-
-    /**
-     * Добавляет новое сообщение в аудит для указанного пользователя
-     *
-     * @param user    Пользователь
-     * @param message Сообщение о некоторой активности
-     */
-    @Override
-    public void addMessageInAudit(User user, String message) {
-        if (!auditMap.containsKey(user)) {
-            auditMap.put(user, new ArrayList<>());
-        }
-        auditMap.get(user).add(message);
-    }
-
-    /**
-     * Возвращает аудит по указанному пользователю
-     *
-     * @param user Пользователь
-     * @return Аудит действий пользователя
-     */
-    @Override
-    public List<String> getAuditListByUser(User user) {
-        return auditMap.get(user);
     }
 }

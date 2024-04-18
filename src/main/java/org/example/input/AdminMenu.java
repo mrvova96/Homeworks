@@ -125,7 +125,7 @@ public class AdminMenu {
             int position = new Scanner(System.in).nextInt();
             User user = userList.get(position - 1);
             System.out.println("\nПолный аудит пользователя " + user.getLogin() + ":");
-            userService.getAuditListByUser(user).forEach(System.out::println);
+            System.out.print(userService.getAuditService().getAuditByUser(user));
         }
         showAdminMenu();
     }

@@ -44,7 +44,7 @@ public class UserMenu {
         this.userService = userService;
         this.user = user;
         workoutService = new WorkoutService(user);
-        userService.addLoginInfoInAudit(user, isRegistered);
+        userService.getAuditService().addLoginInfoInAudit(user, isRegistered);
         showUserMenu();
     }
 
@@ -142,7 +142,7 @@ public class UserMenu {
         Workout workout = new Workout(type, date, time, kcal, info);
         workoutService.addWorkout(workout);
         System.out.println("\nТренировка была успешно добавлена!");
-        userService.addAddingWorkoutInAudit(user, workout);
+        userService.getAuditService().addAddingWorkoutInAudit(user, workout);
         showUserMenu();
     }
 
@@ -167,7 +167,7 @@ public class UserMenu {
         Workout removedWorkout = workoutService.getWorkoutList().get(position - 1);
         workoutService.removeWorkout(position - 1);
         System.out.println("\nТренировка была успешно удалена!");
-        userService.addRemovingWorkoutInAudit(user, removedWorkout);
+        userService.getAuditService().addRemovingWorkoutInAudit(user, removedWorkout);
         showUserMenu();
     }
 
@@ -237,7 +237,7 @@ public class UserMenu {
         Workout newWorkout = new Workout(type, date, time, kcal, info);
         workoutService.updateWorkout(position - 1, newWorkout);
         System.out.println("\nТренировка была успешно отредактирована!");
-        userService.addUpdatingWorkoutInAudit(user, workout);
+        userService.getAuditService().addUpdatingWorkoutInAudit(user, workout);
         showUserMenu();
     }
 
@@ -254,7 +254,7 @@ public class UserMenu {
                 System.out.println((i + 1) + ") " + workoutListSortedByDate.get(i));
             }
         }
-        userService.addViewingWorkoutListInAudit(user);
+        userService.getAuditService().addViewingWorkoutListInAudit(user);
         showUserMenu();
     }
 
@@ -267,7 +267,7 @@ public class UserMenu {
         for (int i = 0; i < workoutTypeList.size(); i++) {
             System.out.println((i + 1) + ") " + workoutTypeList.get(i));
         }
-        userService.addViewingWorkoutTypeListInAudit(user);
+        userService.getAuditService().addViewingWorkoutTypeListInAudit(user);
         showUserMenu();
     }
 
@@ -283,7 +283,7 @@ public class UserMenu {
         } else {
             workoutService.addWorkoutType(workoutType);
             System.out.println("\nНовый тип тренировки был успешно добавлен!");
-            userService.addAddingWorkoutTypeInAudit(user, workoutType);
+            userService.getAuditService().addAddingWorkoutTypeInAudit(user, workoutType);
         }
         showUserMenu();
     }
@@ -336,7 +336,7 @@ public class UserMenu {
             int position = new Scanner(System.in).nextInt();
             WorkoutType workoutType = workoutTypeList.get(position - 1);
             System.out.println(workoutService.getCountOfWorkoutsByTypeMessage(workoutType));
-            userService.addViewingCountOfWorkoutsByTypeInAudit(user, workoutType);
+            userService.getAuditService().addViewingCountOfWorkoutsByTypeInAudit(user, workoutType);
         }
         showStatistic();
     }
@@ -346,7 +346,7 @@ public class UserMenu {
      */
     private void showAverageWorkoutsTime() {
         System.out.println(workoutService.getAverageWorkoutsTimeMessage());
-        userService.addViewingAverageWorkoutsTimeInAudit(user);
+        userService.getAuditService().addViewingAverageWorkoutsTimeInAudit(user);
         showStatistic();
     }
 
@@ -355,7 +355,7 @@ public class UserMenu {
      */
     private void showCountOfCalories() {
         System.out.println(workoutService.getCountOfCaloriesMessage());
-        userService.addViewingCountOfCaloriesInAudit(user);
+        userService.getAuditService().addViewingCountOfCaloriesInAudit(user);
         showStatistic();
     }
 
@@ -364,7 +364,7 @@ public class UserMenu {
      */
     private void showAverageCountOfCalories() {
         System.out.println(workoutService.getAverageCountOfCaloriesMessage());
-        userService.addViewingAverageCountOfCaloriesInAudit(user);
+        userService.getAuditService().addViewingAverageCountOfCaloriesInAudit(user);
         showStatistic();
     }
 
@@ -372,7 +372,7 @@ public class UserMenu {
      * Производит выход из профиля
      */
     private void logout() {
-        userService.addLogoutInfoInAudit(user);
+        userService.getAuditService().addLogoutInfoInAudit(user);
         StartMenu.showStartMenu();
     }
 
@@ -380,7 +380,7 @@ public class UserMenu {
      * Производит выход из приложения
      */
     private void exit() {
-        userService.addExitInfoInAudit(user);
+        userService.getAuditService().addExitInfoInAudit(user);
         System.exit(0);
     }
 }
